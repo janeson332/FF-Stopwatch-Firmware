@@ -12,11 +12,6 @@
 
 #include "FreeRTOS.h"
 
-typedef struct{
-	int (*ModeFunction)();
-	char const * const displayText;
-}tModeHandleTable;
-
 typedef enum{
 	mode_SingleStop = 0,
 	mode_DualStop = 1,
@@ -25,14 +20,26 @@ typedef enum{
 	mode_Remote = 4
 }tStopwatchModes;
 
+typedef enum{
+	StopwatchMode_OK,
+	StopwatchMode_ReturnToMain,
+	StopwatchMode_Error
+}StopwatchModeRetType_t;
+
+typedef struct{
+	StopwatchModeRetType_t (*ModeFunction)();
+	char const * const displayText;
+}tModeHandleTable;
+
+
 tModeHandleTable const * StopwatchModes_GetModeTable();
 
-int StopwatchMode_SingleStop(void);
+StopwatchModeRetType_t StopwatchMode_SingleStop(void);
 
-int StopwatchMode_DualStop(void);
+StopwatchModeRetType_t StopwatchMode_DualStop(void);
 
-int StopwatchMode_Remote(void);
+StopwatchModeRetType_t StopwatchMode_Remote(void);
 
-int StopwatchMode_Settings(void);
+StopwatchModeRetType_t StopwatchMode_Settings(void);
 
 #endif /* STOPWATCHMODES_H_INCLUDED */
