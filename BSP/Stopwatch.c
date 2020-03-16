@@ -37,7 +37,7 @@ void Stopwatch_StartContinue(void){
 	StartStopwatchTimer();
 }
 
-void Stopwatch_Stop(tTimeStruct *pTime){
+void Stopwatch_Stop(StopTimeType_t *pTime){
 	StopStopwatchTimer();
 	if(pTime != 0){
 		pTime->seconds = seconds;
@@ -45,7 +45,7 @@ void Stopwatch_Stop(tTimeStruct *pTime){
 	}
 }
 
-void Stopwatch_GetTime(tTimeStruct *pTime){
+void Stopwatch_GetTime(StopTimeType_t *pTime){
 	if(pTime != 0){
 		pTime->seconds = seconds;
 		pTime->milliseconds = GetMillisFromTimer();

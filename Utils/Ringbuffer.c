@@ -26,8 +26,8 @@
   * @param capacity: capacity of the given buffer
   * @returns None
   */
-void Ringbuffer_Init(tCircularBuffer* rb, void* buffer, uint32_t capacity, uint32_t size){
-    memset(rb,0,sizeof(tCircularBuffer));
+void Ringbuffer_Init(CircularBufferType_t* rb, void* buffer, uint32_t capacity, uint32_t size){
+    memset(rb,0,sizeof(CircularBufferType_t));
     memset(buffer,0,size*capacity);
     rb->buffer = buffer;
     rb->capacity = capacity;
@@ -42,7 +42,7 @@ void Ringbuffer_Init(tCircularBuffer* rb, void* buffer, uint32_t capacity, uint3
   * @param rb: ringbuffer-structure to clear
   * @returns None
   */
-void Ringbuffer_Clear(tCircularBuffer* rb){
+void Ringbuffer_Clear(CircularBufferType_t* rb){
     memset(rb->buffer,0,sizeof(int32_t)*rb->capacity);
     rb->count = 0;
     rb->head = rb->buffer;
@@ -54,7 +54,7 @@ void Ringbuffer_Clear(tCircularBuffer* rb){
   * @param rb: ringbuffer to operate
   * @param value: value to push
   */
-void Ringbuffer_Push(tCircularBuffer* rb, void const* value){
+void Ringbuffer_Push(CircularBufferType_t* rb, void const* value){
     if(rb->count == rb->capacity){
         // handle error, do nothing
         return;
@@ -72,7 +72,7 @@ void Ringbuffer_Push(tCircularBuffer* rb, void const* value){
   * @param pVal: pointer on value to store the popped val
   * @returns true if something got popped, else false
   */
-uint32_t Ringbuffer_Pop(tCircularBuffer* rb, void *pVal){
+uint32_t Ringbuffer_Pop(CircularBufferType_t* rb, void *pVal){
     if(rb->count == 0){
         // handle error
         return 0;
@@ -90,7 +90,7 @@ uint32_t Ringbuffer_Pop(tCircularBuffer* rb, void *pVal){
   * @param rb: ringbuffer to operate
   * @returns true if empty else false
   */
-uint32_t Ringbuffer_IsEmpty(tCircularBuffer const * const rb){
+uint32_t Ringbuffer_IsEmpty(CircularBufferType_t const * const rb){
     
     return rb->count == 0 ? 1 : 0;
 }

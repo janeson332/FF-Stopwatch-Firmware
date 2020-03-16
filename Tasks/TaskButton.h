@@ -12,10 +12,13 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "Buttons.h"
 
 #define TASK_BUTTON_STACK_SIZE  512
 
 void TaskButton(void);
 void TaskButton_SetRxEventTask(TaskHandle_t handle);
+
+uint8_t TaskButton_GetFlag(ButtonType_t button);
 
 #endif /* TASKBUTTON_H_INCLUDED */

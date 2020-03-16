@@ -17,7 +17,13 @@
 
 #include "task.h"
 
-static tModeHandleTable* mModeHndlTable = 0;
+typedef enum {
+	MainHandler,
+	ModeHandler
+}MainHandlerMode_t;
+
+static MainHandlerMode_t mHandlerState = MainHandler;
+static ModeHandleTableType_t* mModeHndlTable = 0;
 static uint32_t          mCurrentModeCounter = 0;
 
 void StopwatchTask(void){
@@ -35,48 +41,45 @@ void StopwatchTask(void){
 
 
 
+	TaskDisplayWriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
+	TaskDisplayWriteString("Menu            ",0,0);
+
 	DEBUG_LOG("Stopwatch Task initialized");
 	while(1){
 
-
-		if((STOPWATCH_TASK_NOTIFY_BUTTON_NEXT & taskNotificationValue) != 0){
-			DEBUG_LOG("Button Next");
-			mCurrentModeCounter++;
-			if(mModeHndlTable[mCurrentModeCounter].ModeFunction==0){
-				mCurrentModeCounter = 0;
+		if(mHandlerState == MainHandler){
+			if((STOPWATCH_TASK_NOTIFY_BUTTON_NEXT & taskNotificationValue) != 0){
+				DEBUG_LOG("Button Next");
+				mCurrentModeCounter++;
+				if(mModeHndlTable[mCurrentModeCounter].ModeFunction==0){
+					mCurrentModeCounter = 0;
+				}
+				TaskDisplayWriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
+				TaskDisplayWriteString("Menu            ",0,0);
 			}
+
+			if((STOPWATCH_TASK_NOTIFY_BUTTON_SELECT & taskNotificationValue) != 0 ){
+				mHandlerState = ModeHandler;
+				DEBUG_LOG("Button Select");
+			}
+
+			DEBUG_LOG("Wait for Event");
+			xTaskNotifyWait(STOPWATCH_TASK_NOTIFY_WAIT,STOPWATCH_TASK_NOTIFY_WAIT,&taskNotificationValue,200);
+
+
+		}else if(mHandlerState == ModeHandler){
+			StopwatchModeRetType_t ret = mModeHndlTable[mCurrentModeCounter].ModeFunction();
+			if(ret == StopwatchMode_ReturnToMain){
+				mHandlerState = MainHandler;
+				TaskDisplayWriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
+				TaskDisplayWriteString("Menu            ",0,0);
+			} else if(ret == StopwatchMode_Error){
+				mHandlerState = MainHandler;
+				DEBUG_LOG("ModeHandler returned Error");
+			}
+
+			vTaskDelay(10);
 		}
 
-		if((STOPWATCH_TASK_NOTIFY_BUTTON_SELECT & taskNotificationValue) != 0 ){
-			mModeHndlTable[mCurrentModeCounter].ModeFunction();
-			DEBUG_LOG("Button Select");
-		}
-
-		if((STOPWATCH_TASK_NOTIFY_BUTTON_RESERVED & taskNotificationValue) != 0 ){
-			DEBUG_LOG("Button Reserved");
-		}
-
-		if((STOPWATCH_TASK_NOTIFY_BUZZER1_PRESSED & taskNotificationValue) != 0 ){
-			DEBUG_LOG("Buzzer1 Pressed");
-		}
-
-		if((STOPWATCH_TASK_NOTIFY_BUZZER1_RELEASED & taskNotificationValue) != 0 ){
-			DEBUG_LOG("Buzzer1 Released");
-		}
-
-		if((STOPWATCH_TASK_NOTIFY_BUZZER2_PRESSED & taskNotificationValue) != 0 ){
-			DEBUG_LOG("Buzzer2 Pressed");
-		}
-
-		if((STOPWATCH_TASK_NOTIFY_BUZZER2_RELEASED & taskNotificationValue) != 0 ){
-			DEBUG_LOG("Buzzer2 Released");
-		}
-
-		TaskDisplayWriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
-
-
-		TaskDisplayWriteString("Menu            ",0,0);
-		DEBUG_LOG("Wait for Event");
-		xTaskNotifyWait(0,STOPWATCH_TASK_NOTIFY_WAIT,&taskNotificationValue,portMAX_DELAY);
 	}
 }

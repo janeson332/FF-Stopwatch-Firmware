@@ -46,7 +46,7 @@ void Buttons_Init(void){
 	}
 }
 
-uint8_t Buttons_GetState(tButtonType button){
+uint8_t Buttons_GetState(ButtonType_t button){
 	assert(button < BUTTONS_NUMBER_MAX);
 	return GPIO_ReadInputDataBit(gpioInitArr[button].port,gpioInitArr[button].pin);
 }
