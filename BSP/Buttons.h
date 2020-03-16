@@ -20,11 +20,11 @@ typedef enum {
 	btn_res = 2, //reserved
 	buzzer1 = 3,
 	buzzer2 = 4
-}tButtonType;
+}ButtonType_t;
 
 void Buttons_Init(void);
 
-uint8_t Buttons_GetState(tButtonType button);
+uint8_t Buttons_GetState(ButtonType_t button);
 
 
 #endif /* BUTTONS_H_INCLUDED */

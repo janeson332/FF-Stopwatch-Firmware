@@ -28,7 +28,7 @@ typedef struct{
 	uint8_t message[LCD_COLS+1];
 	uint32_t col;
 	uint32_t row;
-}tMessage;
+}MessageType_t;
 
 static void Display_Init(void);
 static void I2CWriteSingleByte(uint8_t addr, uint8_t data);
@@ -38,7 +38,7 @@ static uint8_t mStorageBuffer[MESSAGE_BUFFER_SIZE];
 static StaticMessageBuffer_t mMessageBufferStruct;
 static MessageBufferHandle_t mMessageBuffer = 0;;
 
-static tMessage mMessageRx;
+static MessageType_t mMessageRx;
 
 void TaskDisplay(void){
 
@@ -53,7 +53,7 @@ void TaskDisplay(void){
 	DEBUG_LOG("Display Initialized");
 	while(1){
 
-		xMessageBufferReceive(mMessageBuffer,(void*)(&mMessageRx),sizeof(tMessage),portMAX_DELAY);
+		xMessageBufferReceive(mMessageBuffer,(void*)(&mMessageRx),sizeof(MessageType_t),portMAX_DELAY);
 		LCD_SetCursor(&mLcd,mMessageRx.col,mMessageRx.row);
 		LCD_WriteString(&mLcd,mMessageRx.message);
 	}
@@ -67,15 +67,15 @@ int8_t TaskDisplayWriteString(char const * const str,uint32_t col, uint32_t row)
 		return -1;
 	}
 
-	tMessage msg;
-	memset(&msg,0,sizeof(tMessage));
+	MessageType_t msg;
+	memset(&msg,0,sizeof(MessageType_t));
 
 	strncpy(msg.message,str,length);
 	msg.col = col;
 	msg.row = row;
 
 	taskENTER_CRITICAL();
-	xMessageBufferSend(mMessageBuffer,(void*)(&msg),sizeof(tMessage),portMAX_DELAY);
+	xMessageBufferSend(mMessageBuffer,(void*)(&msg),sizeof(MessageType_t),portMAX_DELAY);
 	taskEXIT_CRITICAL();
 
 	return 0;

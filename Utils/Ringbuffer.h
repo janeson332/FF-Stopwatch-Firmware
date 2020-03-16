@@ -22,7 +22,7 @@ typedef struct{
     uint32_t sz;        /**< size of each item in the buffer */
     void *head;       /**< position of the first element of the rb */
     void *tail;       /**< position of the last element of the rb */
-}tCircularBuffer; /**< ringbuffer structure with all the infos */
+}CircularBufferType_t; /**< ringbuffer structure with all the infos */
     
 /* Exported define ------------------------------------------------------------*/
 /* Exported macro -------------------------------------------------------------*/
@@ -37,21 +37,21 @@ typedef struct{
   * @param capacity: capacity of the given buffer
   * @returns None
   */
-void Ringbuffer_Init(tCircularBuffer* rb, void* buffer, uint32_t capacity, uint32_t size);
+void Ringbuffer_Init(CircularBufferType_t* rb, void* buffer, uint32_t capacity, uint32_t size);
 
 /** 
   * @brief clears the ringbuffer
   * @param rb: ringbuffer-structure to clear
   * @returns None
   */
-void Ringbuffer_Clear(tCircularBuffer* rb);
+void Ringbuffer_Clear(CircularBufferType_t* rb);
 
 /**
   * @brief pushes the given value on the ringbuffer (if rb is full first val gets overridden)
   * @param rb: ringbuffer to operate
   * @param value: value to push
   */
-void Ringbuffer_Push(tCircularBuffer* rb, void const* value);
+void Ringbuffer_Push(CircularBufferType_t* rb, void const* value);
 
 /**
   * @brief pops the first value of the ringbuffer (element gets removed)
@@ -59,14 +59,14 @@ void Ringbuffer_Push(tCircularBuffer* rb, void const* value);
   * @param pVal: pointer on value to store the popped val
   * @returns true if something got popped, else false
   */
-uint32_t Ringbuffer_Pop(tCircularBuffer* rb, void *pVal);
+uint32_t Ringbuffer_Pop(CircularBufferType_t* rb, void *pVal);
 
 /**
   * @brief returns true if buffer is empty, else false
   * @param rb: ringbuffer to operate
   * @returns true if empty else false
   */
-uint32_t Ringbuffer_IsEmpty(tCircularBuffer const * const rb);
+uint32_t Ringbuffer_IsEmpty(CircularBufferType_t const * const rb);
 
 
 

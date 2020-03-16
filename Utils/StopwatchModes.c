@@ -26,7 +26,7 @@
 #define BUZZER_RESET_INTERVALL     2000
 #define TIME_TOGGLE_INTERVALL      1000
 
-static const tModeHandleTable modeHandleTable[] = {
+static const ModeHandleTableType_t modeHandleTable[] = {
 		{StopwatchMode_SingleStop, "Loeschangriff   "},
 		{StopwatchMode_DualStop, "Staffellauf     "},
 		{StopwatchMode_Settings, "Einstellungen   "},
@@ -40,24 +40,24 @@ typedef enum {
 
 static StopwatchState_t stopwatchState = Idle;
 
-static tTimeStruct dualStopTimes[2];
+static StopTimeType_t dualStopTimes[2];
 static uint32_t dualStopTimeIdx = 0;
 
 
-void FormatAndPrintTime(tTimeStruct time,char const * preString);
-void PrintDualStopResults(tTimeStruct const * pTimes, uint32_t const n);
+void FormatAndPrintTime(StopTimeType_t time,char const * preString);
+void PrintDualStopResults(StopTimeType_t const * pTimes, uint32_t const n);
 uint32_t BuzzerReset(void);
 uint32_t WaitForEvent(uint32_t event, TickType_t xTicksToWait, BaseType_t resetFlag);
-void UpdateTime(tTimeStruct const * const pTime);
+void UpdateTime(StopTimeType_t const * const pTime);
 
-tModeHandleTable const * StopwatchModes_GetModeTable(){
+ModeHandleTableType_t const * StopwatchModes_GetModeTable(){
 	return modeHandleTable;
 }
 
 StopwatchModeRetType_t StopwatchMode_SingleStop(void){
 	uint32_t taskNotificationValue=0;
 
-	static tTimeStruct time;
+	static StopTimeType_t time;
 
 	switch(stopwatchState){
 	case Idle:{
@@ -116,7 +116,7 @@ StopwatchModeRetType_t StopwatchMode_SingleStop(void){
 
 StopwatchModeRetType_t StopwatchMode_DualStop(void){
 	uint32_t taskNotificationValue=0;
-	static tTimeStruct time;
+	static StopTimeType_t time;
 	StopwatchModeRetType_t ret = StopwatchMode_OK;
 
 	switch(stopwatchState){
@@ -247,7 +247,7 @@ StopwatchModeRetType_t StopwatchMode_Settings(void){
 }
 
 
-void FormatAndPrintTime(tTimeStruct time,char const * preString){
+void FormatAndPrintTime(StopTimeType_t time,char const * preString){
 	char buffer[16+1];
 	char displayBuffer[16+1];
 	memset(displayBuffer,0,sizeof(displayBuffer));
@@ -317,7 +317,7 @@ uint32_t WaitForEvent(uint32_t event, TickType_t xTicksToWait, BaseType_t resetF
 	return (ret==pdFALSE) ? 0 : notificationValue;
 }
 
-void UpdateTime(tTimeStruct const * const pTime){
+void UpdateTime(StopTimeType_t const * const pTime){
 	assert(pTime != 0);
 
 	static TickType_t lastTick = 0;
@@ -327,7 +327,7 @@ void UpdateTime(tTimeStruct const * const pTime){
 	}
 }
 
-void PrintDualStopResults(tTimeStruct const * pTimes, uint32_t const n){
+void PrintDualStopResults(StopTimeType_t const * pTimes, uint32_t const n){
 	assert(n==2);
 	static TickType_t lastTick = 0;
 

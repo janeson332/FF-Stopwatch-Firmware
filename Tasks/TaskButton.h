@@ -19,6 +19,6 @@
 void TaskButton(void);
 void TaskButton_SetRxEventTask(TaskHandle_t handle);
 
-uint8_t TaskButton_GetFlag(tButtonType button);
+uint8_t TaskButton_GetFlag(ButtonType_t button);
 
 #endif /* TASKBUTTON_H_INCLUDED */

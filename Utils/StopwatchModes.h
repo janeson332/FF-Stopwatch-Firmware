@@ -18,7 +18,7 @@ typedef enum{
 	mode_Settings=2,
 	mode_None = 3,
 	mode_Remote = 4
-}tStopwatchModes;
+}StopwatchModeType_t;
 
 typedef enum{
 	StopwatchMode_OK,
@@ -29,10 +29,10 @@ typedef enum{
 typedef struct{
 	StopwatchModeRetType_t (*ModeFunction)();
 	char const * const displayText;
-}tModeHandleTable;
+}ModeHandleTableType_t;
 
 
-tModeHandleTable const * StopwatchModes_GetModeTable();
+ModeHandleTableType_t const * StopwatchModes_GetModeTable();
 
 StopwatchModeRetType_t StopwatchMode_SingleStop(void);
 

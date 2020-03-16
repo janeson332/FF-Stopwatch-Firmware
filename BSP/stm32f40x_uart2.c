@@ -29,7 +29,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 static uint8_t tx_buffer[TX_BUFFER_SIZE] = {0};
-static tCircularBuffer txBufferStruct;
+static CircularBufferType_t txBufferStruct;
 
 /* Private function prototypes -----------------------------------------------*/
 static void DummyFunc(uint8_t ch){return;}

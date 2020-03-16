@@ -18,7 +18,7 @@
 typedef struct{
 	uint32_t seconds;
 	uint32_t milliseconds;
-}tTimeStruct;
+}StopTimeType_t;
 
 void Stopwatch_Init(void);
 
@@ -26,9 +26,9 @@ void Stopwatch_Reset(void);
 
 void Stopwatch_StartContinue(void);
 
-void Stopwatch_Stop(tTimeStruct *pTime);
+void Stopwatch_Stop(StopTimeType_t *pTime);
 
-void Stopwatch_GetTime(tTimeStruct *pTime);
+void Stopwatch_GetTime(StopTimeType_t *pTime);
 
 
 #endif

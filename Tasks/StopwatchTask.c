@@ -23,7 +23,7 @@ typedef enum {
 }MainHandlerMode_t;
 
 static MainHandlerMode_t mHandlerState = MainHandler;
-static tModeHandleTable* mModeHndlTable = 0;
+static ModeHandleTableType_t* mModeHndlTable = 0;
 static uint32_t          mCurrentModeCounter = 0;
 
 void StopwatchTask(void){

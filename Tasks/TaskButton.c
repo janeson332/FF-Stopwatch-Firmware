@@ -20,7 +20,7 @@ static uint8_t lastButtonTaskEventState[BUTTONS_NUMBER_MAX];
 
 static TaskHandle_t mEventTaskHandle = 0;
 
-static void HandleTaskEvent(tButtonType button);
+static void HandleTaskEvent(ButtonType_t button);
 
 void TaskButton(void){
 
@@ -33,7 +33,7 @@ void TaskButton(void){
 	while(1){
 
 		for(uint8_t i=0; i<BUTTONS_NUMBER_MAX;++i){
-			HandleTaskEvent((tButtonType)(i));
+			HandleTaskEvent((ButtonType_t)(i));
 
 
 		}
@@ -47,7 +47,7 @@ void TaskButton_SetRxEventTask(TaskHandle_t handle){
 }
 
 
-static void HandleTaskEvent(tButtonType button){
+static void HandleTaskEvent(ButtonType_t button){
 
 	uint8_t val = Buttons_GetState(button);
 	// pressed button
