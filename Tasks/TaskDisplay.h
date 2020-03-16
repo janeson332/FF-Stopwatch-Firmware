@@ -17,5 +17,7 @@
 
 void TaskDisplay(void);
 int8_t TaskDisplayWriteString(char const * const str,uint32_t col, uint32_t row);
+uint8_t TaskDisplayGetBacklightVal();
+void TaskDisplaySetBacklightVal(uint8_t enable);
 
 #endif /* TASKDISPLAY_H_INCLUDED */

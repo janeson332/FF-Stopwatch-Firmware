@@ -9,20 +9,20 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f40x_uart2.h"
+#include "stm32f40x_uart1.h"
 #include "Utils/Ringbuffer.h"
 #include <string.h>
 #include <assert.h>
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define USARTx_TX_PIN                    GPIO_Pin_2
+#define USARTx_TX_PIN                    GPIO_Pin_9
 #define USARTx_TX_GPIO_PORT              GPIOA
-#define USARTx_TX_SOURCE                 GPIO_PinSource2
+#define USARTx_TX_SOURCE                 GPIO_PinSource9
 
-#define USARTx_RX_PIN                    GPIO_Pin_3
+#define USARTx_RX_PIN                    GPIO_Pin_10
 #define USARTx_RX_GPIO_PORT              GPIOA
-#define USARTx_RX_SOURCE                 GPIO_PinSource3
+#define USARTx_RX_SOURCE                 GPIO_PinSource10
 
 
 #define TX_BUFFER_SIZE 256
@@ -40,22 +40,22 @@ static void (*RCParserFunc)(uint8_t ch) = &DummyFunc;
 /**
   * @brief interrupt handler for the usart1
   */
-void USART2_IRQHandler(void){
+void USART1_IRQHandler(void){
     uint16_t txChar = 0;
     //transmit
-    if((USART2->SR & USART_SR_TXE) && !Ringbuffer_IsEmpty(&txBufferStruct)){
+    if((USART1->SR & USART_SR_TXE) && !Ringbuffer_IsEmpty(&txBufferStruct)){
         if (Ringbuffer_Pop(&txBufferStruct,&txChar)){
-        	USART2->DR = txChar;
+        	USART1->DR = txChar;
         }
     }
 
     if(Ringbuffer_IsEmpty(&txBufferStruct)){
-        USART2->CR1 &= ~USART_CR1_TXEIE;
+        USART1->CR1 &= ~USART_CR1_TXEIE;
     }
 
     //receive
-    if((USART2->SR & USART_SR_RXNE)){
-        char ch = USART2->DR;
+    if((USART1->SR & USART_SR_RXNE)){
+        char ch = USART1->DR;
         (*RCParserFunc)(ch);
     }
 }
@@ -63,12 +63,13 @@ void USART2_IRQHandler(void){
 /**
   * @brief initializes the uart1
   */
-void UART2_Init(void){
+void UART1_Init(void){
     Ringbuffer_Init(&txBufferStruct,tx_buffer,TX_BUFFER_SIZE,sizeof(uint8_t));
 
     // enable clocks
     RCC_AHB1PeriphClockCmd(RCC_AHB1ENR_GPIOAEN,ENABLE);
-	RCC_APB1PeriphClockCmd(RCC_APB1ENR_USART2EN,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2ENR_USART1EN,ENABLE);
+
 
 
     GPIO_InitTypeDef gpioInitStruct = {0};
@@ -86,8 +87,8 @@ void UART2_Init(void){
     gpioInitStruct.GPIO_Mode = GPIO_Mode_AF;
     GPIO_Init(GPIOA, &gpioInitStruct);
 
-    GPIO_PinAFConfig(USARTx_RX_GPIO_PORT,USARTx_RX_SOURCE,GPIO_AF_USART2);
-    GPIO_PinAFConfig(USARTx_TX_GPIO_PORT,USARTx_TX_SOURCE,GPIO_AF_USART2);
+    GPIO_PinAFConfig(USARTx_TX_GPIO_PORT,USARTx_TX_SOURCE,GPIO_AF_USART1);
+    GPIO_PinAFConfig(USARTx_RX_GPIO_PORT,USARTx_RX_SOURCE,GPIO_AF_USART1);
 
     uartInitStruct.USART_BaudRate =  115200;
     uartInitStruct.USART_WordLength = USART_WordLength_8b;
@@ -96,28 +97,28 @@ void UART2_Init(void){
     uartInitStruct.USART_Parity = USART_Parity_No;
     uartInitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
     uartInitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_Init(USART2, &uartInitStruct);
-    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-    USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
-    NVIC_EnableIRQ(USART2_IRQn);
+    USART_Init(USART1, &uartInitStruct);
+    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+    USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
+    NVIC_EnableIRQ(USART1_IRQn);
 
     /* Enable USART */
-    USART_Cmd(USART2, ENABLE);
+    USART_Cmd(USART1, ENABLE);
 }
 
 /**
   * @brief sends 1 char
   * @param ch: char to send
   */
-void UART2_SendChar(uint8_t ch){
+void UART1_SendChar(uint8_t ch){
 
 
-    if((USART2->SR & USART_SR_TXE) == USART_SR_TXE && Ringbuffer_IsEmpty(&txBufferStruct)){
-    	USART2->DR = (uint16_t)(ch);
+    if((USART1->SR & USART_SR_TXE) == USART_SR_TXE && Ringbuffer_IsEmpty(&txBufferStruct)){
+    	USART1->DR = (uint16_t)(ch);
     }
     else{
         __disable_irq();
-        USART2->CR1 |= USART_CR1_TXEIE;
+        USART1->CR1 |= USART_CR1_TXEIE;
         Ringbuffer_Push(&txBufferStruct,&ch);
         __enable_irq();
     }
@@ -127,12 +128,12 @@ void UART2_SendChar(uint8_t ch){
   * @brief sends a string (without \0)
   * @param str: string to send
   */
-void UART2_SendString(char const *str){
+void UART1_SendString(char const *str){
     assert(str != 0);
     uint32_t strLength = strlen(str);
 
     for(uint32_t i = 0; i<strLength;++i){
-        UART2_SendChar(str[i]);
+        UART1_SendChar(str[i]);
     }
 }
 
@@ -140,7 +141,7 @@ void UART2_SendString(char const *str){
   * @brief sets a receiver function
   * @param ParserFunc: function pointer to call after interrupt
   */
-void UART2_SetReceiveParser(void (*ParserFunc)(uint8_t ch)){
+void UART1_SetReceiveParser(void (*ParserFunc)(uint8_t ch)){
     if(ParserFunc == 0){
         return;
     }

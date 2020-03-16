@@ -42,13 +42,15 @@ static tMessage mMessageRx;
 
 void TaskDisplay(void){
 
+	DEBUG_LOG("Start Display Task");
+
 	// initialize message buffer
 	mMessageBuffer = xMessageBufferCreateStatic(sizeof(mStorageBuffer),mStorageBuffer,&mMessageBufferStruct);
 	assert(mMessageBuffer != 0);
 
 	Display_Init();
-	Debug_Write("Task Display Initialized\n");
 
+	DEBUG_LOG("Display Initialized");
 	while(1){
 
 		xMessageBufferReceive(mMessageBuffer,(void*)(&mMessageRx),sizeof(tMessage),portMAX_DELAY);
@@ -61,7 +63,7 @@ int8_t TaskDisplayWriteString(char const * const str,uint32_t col, uint32_t row)
 	uint32_t length = strlen(str);
 
 	if(length>LCD_COLS){
-		Debug_Write("Task Display: written to long string\n");
+		DEBUG_LOG("Task Display: written to long string");
 		return -1;
 	}
 
@@ -72,12 +74,25 @@ int8_t TaskDisplayWriteString(char const * const str,uint32_t col, uint32_t row)
 	msg.col = col;
 	msg.row = row;
 
+	taskENTER_CRITICAL();
 	xMessageBufferSend(mMessageBuffer,(void*)(&msg),sizeof(tMessage),portMAX_DELAY);
-
+	taskEXIT_CRITICAL();
 
 	return 0;
 }
 
+uint8_t TaskDisplayGetBacklightVal(){
+	taskENTER_CRITICAL();
+	uint8_t ret = LCD_GetBacklightState(&mLcd);
+	taskEXIT_CRITICAL();
+	return ret;
+}
+
+void TaskDisplaySetBacklightVal(uint8_t enable){
+	taskENTER_CRITICAL();
+	LCD_Backlight(&mLcd,enable);
+	taskEXIT_CRITICAL();
+}
 
 static void Display_Init(void){
 	I2C1_Init();

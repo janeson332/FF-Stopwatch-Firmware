@@ -11,7 +11,7 @@
 */
 
 #include "HookMemoryFunctions.h"
-
+#include "Utils/Debug.h"
 
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
                                     StackType_t **ppxIdleTaskStackBuffer,
@@ -48,6 +48,6 @@ static StackType_t timerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 }
 
 void vApplicationStackOverflowHook( TaskHandle_t *pxTask, signed char*pcTaskName ){
-
+	Debug_Write("StackOverflowHook got called\n");
     while(1);
 }
