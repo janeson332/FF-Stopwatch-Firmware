@@ -18,6 +18,11 @@
 #include "stm32f4xx_gpio.h"
 #include "Utils/Debug.h"
 
+//#define RN52_DEBUG_LOG_ENABLE
+#ifndef RN52_DEBUG_LOG_ENABLE
+	#define DEBUG_LOG(x)
+#endif
+
 
 #define DIGITAL_SWITCH_PIN			GPIO_Pin_8
 #define DIGITAL_SWITCH_PORT         GPIOA
@@ -46,7 +51,8 @@ static char mResponse[256];
 static void (*mSavedReceiveCallback)(uint8_t ch) = 0;
 static uint32_t (*GetTicks)(void) = 0;
 
-static uint8_t CharacterHexToByte(char ch);
+static uint8_t CharacterHexToNibble(char ch);
+static uint8_t CharacterHexToByte(char high,char low);
 static void CommandParser(uint8_t ch);
 static uint8_t IsResponseValid(void);
 
@@ -136,8 +142,9 @@ RN52RetType_t RN52_DeviceConnected(void){
 	mResponseReceived = 0;
 	DEBUG_LOG(mResponse);
 	if(IsResponseValid()){
-		uint8_t byte0 = CharacterHexToByte(mResponse[1]);
-		if((byte0 & (RN52_QUERY_BYTE0_SPP | RN52_QUERY_BYTE0_A2DP))){
+		uint8_t byte0 = CharacterHexToByte(mResponse[0],mResponse[1]);
+		if((byte0 & (RN52_QUERY_BYTE0_SPP | RN52_QUERY_BYTE0_A2DP))
+				 == (RN52_QUERY_BYTE0_SPP | RN52_QUERY_BYTE0_A2DP)){
 			return RN52_OK;
 		} else{
 			return RN52_NOK;
@@ -152,7 +159,7 @@ static RN52RetType_t Enter_CommandMode(void){
 	uint32_t tick = GetTicks();
 
 	GPIO_ResetBits(RN52_COMMAND_MODE_PORT,RN52_COMMAND_MODE_PIN);
-	RN52_SetReceiveCB(CommandParser);
+	UART1_SetReceiveParser(CommandParser);
 	while(!mCommandModeEntered){
 		if(GetTicks() - tick >= RN52_TIMEOUT_TICK){
 			RN52_SetReceiveCB(mSavedReceiveCallback);
@@ -175,7 +182,7 @@ static RN52RetType_t Exit_CommandMode(void){
 			return RN52_Timeout;
 		}
 	}
-	RN52_SetReceiveCB(mSavedReceiveCallback);
+	UART1_SetReceiveParser(mSavedReceiveCallback);
 	DEBUG_LOG("OK");
 	return RN52_OK;
 }
@@ -206,8 +213,11 @@ static void CommandParser(uint8_t ch){
 		receiveBufferPos = 0;
 	}
 }
+static uint8_t CharacterHexToByte(char high,char low){
+	return (CharacterHexToNibble(high) << 4) | CharacterHexToNibble(low);
+}
 
-static uint8_t CharacterHexToByte(char ch){
+static uint8_t CharacterHexToNibble(char ch){
 	if(ch == '0'){
 		return 0;
 	} else if(ch == '1'){
