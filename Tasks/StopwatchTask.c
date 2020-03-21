@@ -14,6 +14,7 @@
 #include "TaskDisplay.h"
 #include "Utils/Debug.h"
 #include "Utils/StopwatchModes.h"
+#include "BluetoothTask.h"
 
 #include "task.h"
 
@@ -35,27 +36,36 @@ void StopwatchTask(void){
 	uint32_t taskNotificationValue = 0;
 
 	vTaskDelay(1000); // wait until display task has been finished
-	TaskDisplayWriteString("Welcome         ",0,0);
-	TaskDisplayWriteString("                ",0,1);
+	TaskDisplay_WriteString("Welcome         ",0,0);
+	TaskDisplay_WriteString("                ",0,1);
 	vTaskDelay(1000); // wait until display task has been finished
 
 
 
-	TaskDisplayWriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
-	TaskDisplayWriteString("Menu            ",0,0);
+	TaskDisplay_WriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
+	TaskDisplay_WriteString("Menu            ",0,0);
 
 	DEBUG_LOG("Stopwatch Task initialized");
 	while(1){
 
+
+		if(((mHandlerState == MainHandler) || mCurrentModeCounter <= mode_None ) && BluetoothTask_GetRemoteState()){
+			mCurrentModeCounter = mode_Remote;
+			mHandlerState = ModeHandler;
+			StopwatchMode_Reset();
+		}
+
 		if(mHandlerState == MainHandler){
+			xTaskNotifyWait(STOPWATCH_TASK_NOTIFY_WAIT,STOPWATCH_TASK_NOTIFY_WAIT,&taskNotificationValue,200);
+
 			if((STOPWATCH_TASK_NOTIFY_BUTTON_NEXT & taskNotificationValue) != 0){
 				DEBUG_LOG("Button Next");
 				mCurrentModeCounter++;
 				if(mModeHndlTable[mCurrentModeCounter].ModeFunction==0){
 					mCurrentModeCounter = 0;
 				}
-				TaskDisplayWriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
-				TaskDisplayWriteString("Menu            ",0,0);
+				TaskDisplay_WriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
+				TaskDisplay_WriteString("Menu            ",0,0);
 			}
 
 			if((STOPWATCH_TASK_NOTIFY_BUTTON_SELECT & taskNotificationValue) != 0 ){
@@ -63,18 +73,23 @@ void StopwatchTask(void){
 				DEBUG_LOG("Button Select");
 			}
 
-			DEBUG_LOG("Wait for Event");
-			xTaskNotifyWait(STOPWATCH_TASK_NOTIFY_WAIT,STOPWATCH_TASK_NOTIFY_WAIT,&taskNotificationValue,200);
-
 
 		}else if(mHandlerState == ModeHandler){
-			StopwatchModeRetType_t ret = mModeHndlTable[mCurrentModeCounter].ModeFunction();
+
+			 StopwatchModeRetType_t ret = mModeHndlTable[mCurrentModeCounter].ModeFunction();
+
 			if(ret == StopwatchMode_ReturnToMain){
 				mHandlerState = MainHandler;
-				TaskDisplayWriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
-				TaskDisplayWriteString("Menu            ",0,0);
+				if(mCurrentModeCounter>=mode_None){
+					mCurrentModeCounter = mode_SingleStop;
+				}
+				TaskDisplay_WriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
+				TaskDisplay_WriteString("Menu            ",0,0);
 			} else if(ret == StopwatchMode_Error){
 				mHandlerState = MainHandler;
+				if(mCurrentModeCounter>=mode_None){
+					mCurrentModeCounter = mode_SingleStop;
+				}
 				DEBUG_LOG("ModeHandler returned Error");
 			}
 

@@ -31,6 +31,7 @@ typedef struct{
 	char const * const displayText;
 }ModeHandleTableType_t;
 
+void StopwatchMode_Reset(void);
 
 ModeHandleTableType_t const * StopwatchModes_GetModeTable();
 

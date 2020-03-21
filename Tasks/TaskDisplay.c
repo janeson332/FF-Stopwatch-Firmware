@@ -36,7 +36,7 @@ static void I2CWriteSingleByte(uint8_t addr, uint8_t data);
 static tLCD_InitStruct mLcd;
 static uint8_t mStorageBuffer[MESSAGE_BUFFER_SIZE];
 static StaticMessageBuffer_t mMessageBufferStruct;
-static MessageBufferHandle_t mMessageBuffer = 0;;
+static MessageBufferHandle_t mMessageBuffer = 0;
 
 static MessageType_t mMessageRx;
 
@@ -59,7 +59,7 @@ void TaskDisplay(void){
 	}
 }
 
-int8_t TaskDisplayWriteString(char const * const str,uint32_t col, uint32_t row){
+int8_t TaskDisplay_WriteString(char const * const str,uint32_t col, uint32_t row){
 	uint32_t length = strlen(str);
 
 	if(length>LCD_COLS){
@@ -81,14 +81,41 @@ int8_t TaskDisplayWriteString(char const * const str,uint32_t col, uint32_t row)
 	return 0;
 }
 
-uint8_t TaskDisplayGetBacklightVal(){
+void TaskDisplay_PrintTimeString(void){
+	TaskDisplay_WriteString("Zeit:      Ready",0,1);
+}
+
+void TaskDisplay_FormatAndPrintTime(StopTimeType_t time,char const * preString){
+
+	char buffer[16+1];
+	char displayBuffer[16+1];
+	memset(displayBuffer,0,sizeof(displayBuffer));
+
+	int32_t preStringLen = strlen(preString);
+	int32_t timeLen = snprintf(buffer,16+1,"%d.%02ds",time.seconds,(time.milliseconds/10)%100);
+	timeLen = strlen(buffer);
+
+	if(preStringLen+timeLen > 11){
+		DEBUG_LOG("Lengths do not fit into display");
+		snprintf(displayBuffer,16,"        INF");
+	}
+	else{
+		strncpy(displayBuffer,preString,preStringLen);
+		memset(&displayBuffer[preStringLen],' ',11-preStringLen-timeLen);
+		strcat(displayBuffer,buffer);
+	}
+
+	TaskDisplay_WriteString(displayBuffer,5,1);
+}
+
+uint8_t TaskDisplay_GetBacklightVal(){
 	taskENTER_CRITICAL();
 	uint8_t ret = LCD_GetBacklightState(&mLcd);
 	taskEXIT_CRITICAL();
 	return ret;
 }
 
-void TaskDisplaySetBacklightVal(uint8_t enable){
+void TaskDisplay_SetBacklightVal(uint8_t enable){
 	taskENTER_CRITICAL();
 	LCD_Backlight(&mLcd,enable);
 	taskEXIT_CRITICAL();

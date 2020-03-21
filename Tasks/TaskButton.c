@@ -34,8 +34,6 @@ void TaskButton(void){
 
 		for(uint8_t i=0; i<BUTTONS_NUMBER_MAX;++i){
 			HandleTaskEvent((ButtonType_t)(i));
-
-
 		}
 
 		vTaskDelay(5);
@@ -72,7 +70,7 @@ static void HandleTaskEvent(ButtonType_t button){
 	}
 
 	// button release
-	else if (lastButtonTaskEventState[button]!=0 && val == 0){
+	else if ((lastButtonTaskEventState[button] != 0) && (val == 0)){
 		lastButtonTaskEventState[button] = 0;
 		if(mEventTaskHandle != 0){
 			if(button == buzzer1){

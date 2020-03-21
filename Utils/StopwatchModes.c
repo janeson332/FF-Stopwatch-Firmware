@@ -13,6 +13,7 @@
 #include "StopwatchModes.h"
 #include "Tasks/TaskDisplay.h"
 #include "Tasks/StopwatchTask.h"
+#include "Tasks/BluetoothTask.h"
 #include "task.h"
 #include "timers.h"
 #include "Stopwatch.h"
@@ -31,7 +32,7 @@ static const ModeHandleTableType_t modeHandleTable[] = {
 		{StopwatchMode_DualStop, "Staffellauf     "},
 		{StopwatchMode_Settings, "Einstellungen   "},
 		{0,0}, //signalizes end of user selectable modes
-		{StopwatchMode_SingleStop,   "Remote Mode     "}
+		{StopwatchMode_Remote,   "Remote Mode     "}
 };
 
 typedef enum {
@@ -44,11 +45,17 @@ static StopTimeType_t dualStopTimes[2];
 static uint32_t dualStopTimeIdx = 0;
 
 
-void FormatAndPrintTime(StopTimeType_t time,char const * preString);
+//void FormatAndPrintTime(StopTimeType_t time,char const * preString);
 void PrintDualStopResults(StopTimeType_t const * pTimes, uint32_t const n);
 uint32_t BuzzerReset(void);
 uint32_t WaitForEvent(uint32_t event, TickType_t xTicksToWait, BaseType_t resetFlag);
 void UpdateTime(StopTimeType_t const * const pTime);
+
+
+void StopwatchMode_Reset(void){
+	stopwatchState = Idle;
+	Stopwatch_Reset();
+}
 
 ModeHandleTableType_t const * StopwatchModes_GetModeTable(){
 	return modeHandleTable;
@@ -61,8 +68,9 @@ StopwatchModeRetType_t StopwatchMode_SingleStop(void){
 
 	switch(stopwatchState){
 	case Idle:{
-		TaskDisplayWriteString(modeHandleTable[mode_SingleStop].displayText,0,0);
-		TaskDisplayWriteString("Zeit:           ",0,1);
+		TaskDisplay_WriteString(modeHandleTable[mode_SingleStop].displayText,0,0);
+		TaskDisplay_PrintTimeString();
+
 		Stopwatch_Reset();
 		stopwatchState = WaitForStart;
 	} break;
@@ -88,7 +96,7 @@ StopwatchModeRetType_t StopwatchMode_SingleStop(void){
 
 		if(taskNotificationValue != 0){
 			Stopwatch_Stop(&time);
-			FormatAndPrintTime(time,"");
+			TaskDisplay_FormatAndPrintTime(time,"");
 			DEBUG_LOG("Time Stopped");
 			stopwatchState = ShowResult;
 		}else{
@@ -121,8 +129,9 @@ StopwatchModeRetType_t StopwatchMode_DualStop(void){
 
 	switch(stopwatchState){
 	case Idle:{
-		TaskDisplayWriteString(modeHandleTable[mode_DualStop].displayText,0,0);
-		TaskDisplayWriteString("Zeit:           ",0,1);
+		TaskDisplay_WriteString(modeHandleTable[mode_DualStop].displayText,0,0);
+		TaskDisplay_PrintTimeString();
+
 		Stopwatch_Reset();
 		dualStopTimeIdx = 0;
 		memset(&dualStopTimes,0,sizeof(dualStopTimes));
@@ -164,7 +173,7 @@ StopwatchModeRetType_t StopwatchMode_DualStop(void){
 			Stopwatch_Stop(0);
 			DEBUG_LOG("Time Stopped");
 			stopwatchState = ShowResult;
-			FormatAndPrintTime(dualStopTimes[0],"");
+			TaskDisplay_FormatAndPrintTime(dualStopTimes[0],"");
 		}
 
 	}break;
@@ -189,12 +198,52 @@ StopwatchModeRetType_t StopwatchMode_DualStop(void){
 
 
 StopwatchModeRetType_t StopwatchMode_Remote(void){
-	return StopwatchMode_ReturnToMain;
+	StopwatchModeRetType_t ret = StopwatchMode_OK;
+
+	switch(stopwatchState){
+	case Idle:{
+		TaskDisplay_WriteString(modeHandleTable[mode_Remote].displayText,0,0);
+		TaskDisplay_PrintTimeString();
+
+		stopwatchState = ShowResult;
+	} break;
+	default:
+		if(BluetoothTask_GetRemoteState()==0){
+			stopwatchState = Idle;
+			ret = StopwatchMode_ReturnToMain;
+			// reset flags..
+			WaitForEvent(STOPWATCH_TASK_NOTIFY_BUTTON_SELECT | STOPWATCH_TASK_NOTIFY_BUTTON_NEXT,0,pdTRUE);
+		}
+		else{
+			uint32_t notification = WaitForEvent(STOPWATCH_BUZZER_EVENT |
+					STOPWATCH_BUZZER_RELEASE ,0,pdTRUE);
+
+			if(notification & STOPWATCH_TASK_NOTIFY_BUZZER1_PRESSED){
+				BluetoothTask_SendBuzzerMsg(buzzer1,1);
+				DEBUG_LOG("Buzzer1=Pressed");
+			}
+			else if(notification & STOPWATCH_TASK_NOTIFY_BUZZER1_RELEASED){
+				BluetoothTask_SendBuzzerMsg(buzzer1,0);
+				DEBUG_LOG("Buzzer1=Released");
+			}
+
+			if(notification & STOPWATCH_TASK_NOTIFY_BUZZER2_PRESSED){
+				BluetoothTask_SendBuzzerMsg(buzzer2,1);
+				DEBUG_LOG("Buzzer2=Pressed");
+			}
+			else if(notification & STOPWATCH_TASK_NOTIFY_BUZZER2_RELEASED){
+				BluetoothTask_SendBuzzerMsg(buzzer2,0);
+				DEBUG_LOG("Buzzer2=Released");
+			}
+
+		}
+	}
+	return ret;
 }
 
 
 StopwatchModeRetType_t StopwatchMode_Settings(void){
-	TaskDisplayWriteString(modeHandleTable[mode_Settings].displayText,0,0);
+	TaskDisplay_WriteString(modeHandleTable[mode_Settings].displayText,0,0);
 	typedef enum {
 		DisplaySetting=0,
 		BluetoothSetting=1,
@@ -220,22 +269,22 @@ StopwatchModeRetType_t StopwatchMode_Settings(void){
 	switch(settings){
 	case DisplaySetting:{
 
-		TaskDisplayWriteString("Display:        ",0,1);
+		TaskDisplay_WriteString("Display:        ",0,1);
 		if(select){
-			TaskDisplaySetBacklightVal(TaskDisplayGetBacklightVal()==0?1:0);
+			TaskDisplay_SetBacklightVal(TaskDisplay_GetBacklightVal()==0?1:0);
 		}
-		TaskDisplayWriteString((TaskDisplayGetBacklightVal()?" ON":"OFF"),13,1);
+		TaskDisplay_WriteString((TaskDisplay_GetBacklightVal()?" ON":"OFF"),13,1);
 
 	}break;
 	case BluetoothSetting:{
-		TaskDisplayWriteString("Bluetooth:      ",0,1);
+		TaskDisplay_WriteString("Bluetooth:      ",0,1);
 		if(select){
 			RN52_PowerEnable((RN52_Enabled()==ENABLE)?DISABLE:ENABLE);
 		}
-		TaskDisplayWriteString((RN52_Enabled()==ENABLE ?" ON":"OFF"),13,1);
+		TaskDisplay_WriteString((RN52_Enabled()==ENABLE ?" ON":"OFF"),13,1);
 	}break;
 	case Back:{
-		TaskDisplayWriteString("Back...         ",0,1);
+		TaskDisplay_WriteString("Back...         ",0,1);
 		if(select){
 			settings = DisplaySetting;
 			ret = StopwatchMode_ReturnToMain;
@@ -246,28 +295,6 @@ StopwatchModeRetType_t StopwatchMode_Settings(void){
 	return ret;
 }
 
-
-void FormatAndPrintTime(StopTimeType_t time,char const * preString){
-	char buffer[16+1];
-	char displayBuffer[16+1];
-	memset(displayBuffer,0,sizeof(displayBuffer));
-
-	int32_t preStringLen = strlen(preString);
-	int32_t timeLen = snprintf(buffer,16+1,"%d.%02ds",time.seconds,(time.milliseconds/10)%100);
-	timeLen = strlen(buffer);
-
-	if(preStringLen+timeLen > 11){
-		DEBUG_LOG("Lengths do not fit into display");
-		snprintf(displayBuffer,16,"        INF");
-	}
-	else{
-		strncpy(displayBuffer,preString,preStringLen);
-		memset(&displayBuffer[preStringLen],' ',11-preStringLen-timeLen);
-		strcat(displayBuffer,buffer);
-	}
-
-	TaskDisplayWriteString(displayBuffer,5,1);
-}
 
 uint32_t BuzzerReset(void){
 	uint32_t ret = 0;
@@ -323,7 +350,7 @@ void UpdateTime(StopTimeType_t const * const pTime){
 	static TickType_t lastTick = 0;
 	if(xTaskGetTickCount() - lastTick >= UPDATE_TIME_INTERVALL){
 		lastTick = xTaskGetTickCount();
-		FormatAndPrintTime(*pTime,"");
+		TaskDisplay_FormatAndPrintTime(*pTime,"");
 	}
 }
 
@@ -334,10 +361,10 @@ void PrintDualStopResults(StopTimeType_t const * pTimes, uint32_t const n){
 	if(xTaskGetTickCount() - lastTick >= TIME_TOGGLE_INTERVALL){
 		lastTick = xTaskGetTickCount();
 		if(dualStopTimeIdx == 0){
-			FormatAndPrintTime(pTimes[dualStopTimeIdx],"P1");
+			TaskDisplay_FormatAndPrintTime(pTimes[dualStopTimeIdx],"P1");
 			dualStopTimeIdx = 1;
 		} else{
-			FormatAndPrintTime(pTimes[dualStopTimeIdx],"P2");
+			TaskDisplay_FormatAndPrintTime(pTimes[dualStopTimeIdx],"P2");
 			dualStopTimeIdx = 0;
 		}
 	}
