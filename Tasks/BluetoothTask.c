@@ -82,13 +82,14 @@ void BluetoothTask(void){
 			ParseCommand(mMessageRx);
 		}
 		else{
-			if(RN52_Enabled()==ENABLE){
-				RN52RetType_t ret = RN52_DeviceConnected();
+			if(RN52_Enabled()==ENABLE && (BluetoothTask_GetRemoteState()==1)){
+				RN52RetType_t ret = RN52_SPPDeviceConnected();
 				if(ret == RN52_OK){
 					DEBUG_LOG("DeviceConnected");
 				}
 				else if(ret == RN52_NOK){
-					DEBUG_LOG("No Device Connected");
+					DEBUG_LOG("No Device Connected, reset remote state");
+					SetRemoteState(0);
 				}
 				else if(ret == RN52_Timeout){
 					DEBUG_LOG("RN52_Timeout");
