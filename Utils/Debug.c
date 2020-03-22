@@ -1,15 +1,18 @@
 /**
   ******************************************************************************
   * @file    Debug.c
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    14.02.2020
-  * @brief   [Placeholder]
+  * @brief   Module for USART Debug output
   ******************************************************************************
 */
 
 
 #include <assert.h>
+#include <string.h>
+#include <stdio.h>
+
 #include "Debug.h"
 #include "stm32f40x_uart2.h"
 #include "semphr.h"

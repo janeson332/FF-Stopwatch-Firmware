@@ -9,10 +9,12 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f40x_uart1.h"
-#include "Utils/Ringbuffer.h"
 #include <string.h>
 #include <assert.h>
+
+#include "Utils/Ringbuffer.h"
+#include "stm32f40x_uart1.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

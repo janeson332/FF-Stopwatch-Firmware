@@ -1,25 +1,34 @@
+/**
+  ******************************************************************************
+  * @file    LCD_i2c.c
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
+  * @version V1.0
+  * @date    14.02.2020
+  * @brief   lcd display over i2c implementation (ported from arduino lib)
+  ******************************************************************************
+*/
+
+#include <assert.h>
+#include <string.h>
+
 #include "LCD_i2c.h"
 
 // private functions
-void expanderWrite(tLCD_InitStruct *lcd,uint8_t value);
-void pulseEnable(tLCD_InitStruct *lcd,uint8_t value);
-void write4bits(tLCD_InitStruct *lcd,uint8_t value);
-void command(tLCD_InitStruct *lcd,uint8_t cmd);
-uint32_t write(tLCD_InitStruct *lcd,uint8_t value);
-void send(tLCD_InitStruct *lcd,uint8_t value, uint8_t mode);
+static void expanderWrite(tLCD_InitStruct *lcd,uint8_t value);
+static void pulseEnable(tLCD_InitStruct *lcd,uint8_t value);
+static void write4bits(tLCD_InitStruct *lcd,uint8_t value);
+static void command(tLCD_InitStruct *lcd,uint8_t cmd);
+static uint32_t write(tLCD_InitStruct *lcd,uint8_t value);
+static void send(tLCD_InitStruct *lcd,uint8_t value, uint8_t mode);
 
 static void (*I2C_Write1Byte)(uint8_t addr, uint8_t value) = 0;
 static void (*mdelay)(uint32_t) = 0;
-//void I2C_Write1Byte(uint8_t addr, uint8_t value){
-//	Sensors_I2C_WriteRegister(addr,value,0,0);
-//}
 
 
 void LCD_Init(tLCD_InitStruct * lcd, void (*I2C_Write1ByteFunc)(uint8_t, uint8_t),void (*delayFunc)(uint32_t)){
 
-	if((I2C_Write1ByteFunc == 0) || (delayFunc == 0)){ // stop here if no i2c function is given
-		while(1);
-	}
+	assert(I2C_Write1ByteFunc != 0);
+	assert(delayFunc != 0);
 
 	I2C_Write1Byte = I2C_Write1ByteFunc;
 	mdelay = delayFunc;
@@ -166,31 +175,32 @@ uint8_t LCD_GetBacklightState(tLCD_InitStruct * lcd){
 }
 
 //------ private functions ---------------------------------------------------------
-void command(tLCD_InitStruct *lcd, uint8_t cmd){
+static void command(tLCD_InitStruct *lcd, uint8_t cmd){
 	send(lcd,cmd, 0);
 }
 
-uint32_t write(tLCD_InitStruct *lcd, uint8_t value){
+static uint32_t write(tLCD_InitStruct *lcd, uint8_t value){
 	send(lcd, value,Rs);
 	return 1;
 }
 
-void send(tLCD_InitStruct *lcd, uint8_t value, uint8_t mode){
+static void send(tLCD_InitStruct *lcd, uint8_t value, uint8_t mode){
 	uint8_t highnib=value&0xf0;
 	uint8_t lownib=(value<<4)&0xf0;
 	write4bits(lcd,(highnib)|mode);
 	write4bits(lcd,(lownib)|mode);
 }
 
-void write4bits(tLCD_InitStruct *lcd, uint8_t value){
+static void write4bits(tLCD_InitStruct *lcd, uint8_t value){
 	expanderWrite(lcd,value);
 	pulseEnable(lcd,value);
 }
 
-void expanderWrite(tLCD_InitStruct *lcd, uint8_t value){
+static void expanderWrite(tLCD_InitStruct *lcd, uint8_t value){
 	I2C_Write1Byte(lcd->addr,value|lcd->backlightval);
 }
-void pulseEnable(tLCD_InitStruct *lcd, uint8_t value){
+
+static void pulseEnable(tLCD_InitStruct *lcd, uint8_t value){
 	expanderWrite(lcd,value | En);	// En high
 //	mdelay(1);		// enable pulse must be >450ns    /* commented out cause, due i2c transport delay already happens */
 

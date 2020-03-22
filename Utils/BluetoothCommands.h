@@ -4,7 +4,7 @@
   * @author  Stefan
   * @version V1.0
   * @date    16.03.2020
-  * @brief   [Placeholder]
+  * @brief   Commands for the communication with the app
   ******************************************************************************
 */
 

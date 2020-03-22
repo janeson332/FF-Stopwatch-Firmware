@@ -1,12 +1,13 @@
 /**
   ******************************************************************************
   * @file    StopwatchModes.h
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
-  * @date    19.02.2020
-  * @brief   [Placeholder]
+  * @date    21.03.2020
+  * @brief   Implementation of the possible modes of the application
   ******************************************************************************
 */
+
 #ifndef STOPWATCHMODES_H_INCLUDED
 #define STOPWATCHMODES_H_INCLUDED
 
@@ -34,13 +35,5 @@ typedef struct{
 void StopwatchMode_Reset(void);
 
 ModeHandleTableType_t const * StopwatchModes_GetModeTable();
-
-StopwatchModeRetType_t StopwatchMode_SingleStop(void);
-
-StopwatchModeRetType_t StopwatchMode_DualStop(void);
-
-StopwatchModeRetType_t StopwatchMode_Remote(void);
-
-StopwatchModeRetType_t StopwatchMode_Settings(void);
 
 #endif /* STOPWATCHMODES_H_INCLUDED */
