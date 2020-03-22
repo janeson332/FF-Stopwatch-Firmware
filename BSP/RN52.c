@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    RN52.c
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    21.02.2020
   * @brief   Implementation of RN52 Bluetooth module
@@ -13,17 +13,19 @@
 
 #include "RN52.h"
 #include "RN52_Commands.h"
+#include "Utils/Debug.h"
+
 #include "stm32f40x_uart1.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_gpio.h"
-#include "Utils/Debug.h"
+
 
 //#define RN52_DEBUG_LOG_ENABLE
 #ifndef RN52_DEBUG_LOG_ENABLE
 	#define DEBUG_LOG(x)
 #endif
 
-
+// pin definitions for the bluetooth module
 #define DIGITAL_SWITCH_PIN			GPIO_Pin_8
 #define DIGITAL_SWITCH_PORT         GPIOA
 #define DIGITAL_SWITCH_RCC_ENR      RCC_AHB1ENR_GPIOAEN
@@ -42,6 +44,7 @@
 
 #define RN52_TIMEOUT_TICK           ((uint32_t)(100))
 
+// enter/exit command mode of the device
 static RN52RetType_t Enter_CommandMode(void);
 static RN52RetType_t Exit_CommandMode(void);
 

@@ -1,54 +1,65 @@
 /**
   ******************************************************************************
   * @file    StopwatchTask.c
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    18.02.2020
-  * @brief   [Placeholder]
+  * @brief   Main Task for stopwatch functionality
   ******************************************************************************
 */
 
 
 #include "StopwatchTask.h"
-#include "Stopwatch.h"
 #include "TaskDisplay.h"
+#include "BluetoothTask.h"
+#include "Stopwatch.h"
 #include "Utils/Debug.h"
 #include "Utils/StopwatchModes.h"
-#include "BluetoothTask.h"
 
-#include "task.h"
 
 typedef enum {
-	MainHandler,
-	ModeHandler
+	MainHandler,	/*< main menu handler */
+	ModeHandler     /*< sub menu handler */
 }MainHandlerMode_t;
 
+static StaticTask_t tcbStopwatchTask;
+static StackType_t stackStopwatchTask[STOPWATCH_TASK_STACK_SIZE];
+static TaskHandle_t mTaskHandle = 0;
+
 static MainHandlerMode_t mHandlerState = MainHandler;
-static ModeHandleTableType_t* mModeHndlTable = 0;
+static ModeHandleTableType_t const * mModeHndlTable = 0;
 static uint32_t          mCurrentModeCounter = 0;
+
+void StopwatchTask_Init(void){
+	mTaskHandle =
+			xTaskCreateStatic(StopwatchTask,"StopwatchTask",STOPWATCH_TASK_STACK_SIZE,0,3,
+					stackStopwatchTask,&tcbStopwatchTask);
+
+	mModeHndlTable = StopwatchModes_GetModeTable();
+}
+
+TaskHandle_t StopwatchTask_GetTaskHandle(void){
+	return mTaskHandle;
+}
 
 void StopwatchTask(void){
 
 	DEBUG_LOG("Start Stopwatch Task");
-	Stopwatch_Init();
-	mModeHndlTable = StopwatchModes_GetModeTable();
 
 	uint32_t taskNotificationValue = 0;
 
-	vTaskDelay(1000); // wait until display task has been finished
 	TaskDisplay_WriteString("Welcome         ",0,0);
 	TaskDisplay_WriteString("                ",0,1);
-	vTaskDelay(1000); // wait until display task has been finished
 
+	vTaskDelay(1000); // Welcome string time
 
 
 	TaskDisplay_WriteString(mModeHndlTable[mCurrentModeCounter].displayText,0,1);
 	TaskDisplay_WriteString("Menu            ",0,0);
 
-	DEBUG_LOG("Stopwatch Task initialized");
 	while(1){
 
-
+		// handle remote functionality
 		if(((mHandlerState == MainHandler) || mCurrentModeCounter <= mode_None ) && BluetoothTask_GetRemoteState()){
 			mCurrentModeCounter = mode_Remote;
 			mHandlerState = ModeHandler;

@@ -14,6 +14,7 @@ Author  :
 #include "stm32f4xx.h"
 #include "stdio.h"
 #include "FreeRTOS.h"
+#include "task.h"
 
 /********************************* Defines ************************************/
 
@@ -64,7 +65,7 @@ static void mdelay(uint32_t msec){
 
 void I2C1_Init(void)
 {
-	mdelay(50);
+	//mdelay(50);
   GPIO_InitTypeDef GPIO_InitStructure;
   I2C_InitTypeDef I2C_InitStructure;
 

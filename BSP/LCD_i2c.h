@@ -1,3 +1,13 @@
+/**
+  ******************************************************************************
+  * @file    LCD_i2c.h
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
+  * @version V1.0
+  * @date    14.02.2020
+  * @brief   lcd display over i2c interface (ported from arduino lib)
+  ******************************************************************************
+*/
+
 #ifndef LCD_I2C_H_INCLUDED
 #define LCD_I2C_H_INCLUDED
 
@@ -61,29 +71,62 @@ typedef struct{
 	uint8_t backlightval;
 }tLCD_InitStruct;
 
-
+/**
+ * @brief initializes lcd display modul
+ * @param I2C_Write1ByteFunc: function to write 1 byte on i2c bus (first is address, second data)
+ * @param delayFunc: function to delay (value is in ms)
+ */
 void LCD_Init(tLCD_InitStruct * lcd, void (*I2C_Write1ByteFunc)(uint8_t, uint8_t),void (*delayFunc)(uint32_t));
 
+/**
+ * @brief writes given character on the display
+ */
 void LCD_WriteChar(tLCD_InitStruct * lcd, uint8_t ch);
 
+/**
+ * @brief writes given string on display
+ */
 void LCD_WriteString(tLCD_InitStruct * lcd, uint8_t const * str);
 
+/**
+ * @brief clears display
+ */
 void LCD_Clear(tLCD_InitStruct * lcd);
 
+/**
+ * @brief set cursor to zero position (home position)
+ */
 void LCD_Home(tLCD_InitStruct * lcd);
 
+/**
+ * @brief sets cursor to given position
+ */
 void LCD_SetCursor(tLCD_InitStruct * lcd, uint8_t col, uint8_t row);
 
+/**
+ * @brief sets display to state on or off (1,0)
+ */
 void LCD_Display(tLCD_InitStruct * lcd, uint8_t state);
 
+/**
+ * @brief enables/disables cursor blink
+ */
 void LCD_Blink(tLCD_InitStruct * lcd, uint8_t state);
 
+/**
+ * @brief enables/disables cursor
+ */
 void LCD_Cursor(tLCD_InitStruct * lcd, uint8_t state);
 
+/**
+ * @brief enables/disables lcd backlight
+ */
 void LCD_Backlight(tLCD_InitStruct * lcd, uint8_t state);
 
+/**
+ * @brief returns state of backlight
+ */
 uint8_t LCD_GetBacklightState(tLCD_InitStruct * lcd);
-
 
 
 #endif

@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
   * @file    RN52_Commands.h
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    22.02.2020
-  * @brief   [Placeholder]
+  * @brief   Available commands from the RN52 bluetooth module (not fully implemented)
   ******************************************************************************
 */
 #ifndef RN52_COMMANDS_H_INCLUDED

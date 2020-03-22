@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
   * @file    Buttons.c
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    14.02.2020
-  * @brief   [Placeholder]
+  * @brief   Button implementation
   ******************************************************************************
 */
 

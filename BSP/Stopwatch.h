@@ -1,19 +1,18 @@
 /**
   ******************************************************************************
   * @file    Stopwatch.h
-  * @author  Jahn Stefan
+  * @author  Jahn Stefan <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    10.08.2018
-  * @brief   Module to handle a stopwatch (stops time and so on..)
+  * @brief   Module for stopping time with internal timer (tim2)
   ******************************************************************************
   */
 
-#include "stm32f4xx.h"
-#include <stdint.h>
-
-
 #ifndef STOPWATCH_H_INCLUDED
 #define STOPWATCH_H_INCLUDED
+
+#include <stdint.h>
+#include "stm32f4xx.h"
 
 typedef struct{
 	uint32_t seconds;

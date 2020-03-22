@@ -1,27 +1,34 @@
 /**
   ******************************************************************************
   * @file    BluetoothTask.c
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
-  * @date    26.02.2020
-  * @brief   [Placeholder]
+  * @date    21.03.2020
+  * @brief   Task for handling bluetooth communication
   ******************************************************************************
 */
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
-#include "Utils/Debug.h"
 #include "BluetoothTask.h"
 #include "StopwatchTask.h"
+#include "TaskDisplay.h"
 #include "Stopwatch.h"
-#include "Utils/BluetoothCommands.h"
 #include "RN52.h"
+#include "Utils/Debug.h"
+#include "Utils/BluetoothCommands.h"
+
 #include "message_buffer.h"
 #include "task.h"
 
 #define MAX_MESSAGE_SIZE            128
 #define CHECK_CONNECTED_INTERVALL   pdMS_TO_TICKS(1000)
+
+
+StaticTask_t tcbBluetoothTask;
+StackType_t stackBluetoothTask[BLUETOOTH_TASK_STACK_SIZE];
 
 static char mStorageBuffer[MAX_MESSAGE_SIZE];
 static StaticMessageBuffer_t mMessageBufferStruct;
@@ -33,6 +40,17 @@ static uint8_t bluetoothRemoteOn = 0;
 static void BluetoothReceiveCB(uint8_t ch);
 static void ParseCommand(char const * str);
 static uint8_t SetRemoteState(uint8_t val);
+
+
+void BluetoothTask_Init(void){
+	xTaskCreateStatic(BluetoothTask,"BluetoothTask",BLUETOOTH_TASK_STACK_SIZE,0,tskIDLE_PRIORITY,
+			stackBluetoothTask,&tcbBluetoothTask);
+
+	mMessageBuffer = xMessageBufferCreateStatic(sizeof(mStorageBuffer),mStorageBuffer,&mMessageBufferStruct);
+	assert(mMessageBuffer != 0);
+
+	RN52_SetReceiveCB(BluetoothReceiveCB);
+}
 
 uint8_t BluetoothTask_GetRemoteState(void){
 	uint8_t val = 0;
@@ -66,11 +84,8 @@ void BluetoothTask_SendBuzzerMsg(ButtonType_t buzzer,uint32_t value){
 }
 
 void BluetoothTask(void){
-	//assert(mEventTaskHandle != 0);
-	mMessageBuffer = xMessageBufferCreateStatic(sizeof(mStorageBuffer),mStorageBuffer,&mMessageBufferStruct);
-	assert(mMessageBuffer != 0);
 
-	RN52_SetReceiveCB(BluetoothReceiveCB);
+	DEBUG_LOG("Start Bluetooth Task");
 
 	while(1){
 
@@ -105,7 +120,6 @@ void BluetoothTask(void){
 
 
 static void ParseCommand(char const * str){
-	char buffer[64];
 
 	// parse commands in usage order
 	if(strncmp(BT_COMMAND_UPDATE_TIME,str,strlen(BT_COMMAND_UPDATE_TIME))==0){

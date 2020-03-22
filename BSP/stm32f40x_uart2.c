@@ -1,18 +1,19 @@
 /**
   ******************************************************************************
-  * @file    stm32f10x_uart1.c
+  * @file    stm32f10x_uart2.c
   * @author  Jahn Stefan
   * @version V1.0
   * @date    03.12.2017
-  * @brief   functions to operate with the usart1 as uart
+  * @brief   functions to operate with the usart2 as uart
   ******************************************************************************
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f40x_uart2.h"
-#include "Utils/Ringbuffer.h"
 #include <string.h>
 #include <assert.h>
+
+#include "Utils/Ringbuffer.h"
+#include "stm32f40x_uart2.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

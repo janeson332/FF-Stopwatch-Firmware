@@ -1,35 +1,39 @@
 /**
   ******************************************************************************
   * @file    TaskButton.c
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    14.02.2020
-  * @brief   [Placeholder]
+  * @brief   Task for handling button input
   ******************************************************************************
 */
 
-#include "TaskButton.h"
+#include <string.h>
 
+#include "TaskButton.h"
+#include "StopwatchTask.h"
+#include "Buttons.h"
 #include "Utils/Debug.h"
 
-#include "task.h"
-#include "StopwatchTask.h"
-
+static StaticTask_t tcbButtonTask;
+static StackType_t  stackButtonTask[TASK_BUTTON_STACK_SIZE];
 
 static uint8_t lastButtonTaskEventState[BUTTONS_NUMBER_MAX];
-
 static TaskHandle_t mEventTaskHandle = 0;
 
 static void HandleTaskEvent(ButtonType_t button);
 
+void TaskButton_Init(void){
+	memset(lastButtonTaskEventState,0,sizeof(lastButtonTaskEventState));
+	xTaskCreateStatic(TaskButton,"ButtonTask",TASK_BUTTON_STACK_SIZE,0,tskIDLE_PRIORITY,
+			stackButtonTask,&tcbButtonTask);
+
+}
+
 void TaskButton(void){
 
-	DEBUG_LOG("Start Button Task");
+	DEBUG_LOG("Start TaskButton");
 
-	Buttons_Init();
-	memset(lastButtonTaskEventState,0,sizeof(lastButtonTaskEventState));
-
-	DEBUG_LOG("Buttons Initialized");
 	while(1){
 
 		for(uint8_t i=0; i<BUTTONS_NUMBER_MAX;++i){

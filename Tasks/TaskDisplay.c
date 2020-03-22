@@ -1,19 +1,22 @@
 /**
   ******************************************************************************
   * @file    TaskDisplay.c
-  * @author  Stefan
+  * @author  Stefan Jahn <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    14.02.2020
-  * @brief   [Placeholder]
+  * @brief   Handles Display output
   ******************************************************************************
 */
 
 #include <assert.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "TaskDisplay.h"
 #include "Utils/Debug.h"
 #include "i2c1.h"
 #include "LCD_i2c.h"
+
 #include "task.h"
 #include "message_buffer.h"
 
@@ -33,6 +36,9 @@ typedef struct{
 static void Display_Init(void);
 static void I2CWriteSingleByte(uint8_t addr, uint8_t data);
 
+static StaticTask_t tcbDisplayTask;
+static StackType_t stackDisplayTask[TASK_DISPLAY_STACK_SIZE];
+
 static tLCD_InitStruct mLcd;
 static uint8_t mStorageBuffer[MESSAGE_BUFFER_SIZE];
 static StaticMessageBuffer_t mMessageBufferStruct;
@@ -40,17 +46,23 @@ static MessageBufferHandle_t mMessageBuffer = 0;
 
 static MessageType_t mMessageRx;
 
-void TaskDisplay(void){
+void TaskDisplay_Init(void){
 
-	DEBUG_LOG("Start Display Task");
+	xTaskCreateStatic(TaskDisplay,"DisplayTask",TASK_DISPLAY_STACK_SIZE,0,tskIDLE_PRIORITY,
+			stackDisplayTask,&tcbDisplayTask);
 
 	// initialize message buffer
 	mMessageBuffer = xMessageBufferCreateStatic(sizeof(mStorageBuffer),mStorageBuffer,&mMessageBufferStruct);
 	assert(mMessageBuffer != 0);
-
 	Display_Init();
 
-	DEBUG_LOG("Display Initialized");
+}
+
+void TaskDisplay(void){
+
+	LCD_Init(&mLcd,I2CWriteSingleByte,vTaskDelay);
+	DEBUG_LOG("Start Display Task");
+
 	while(1){
 
 		xMessageBufferReceive(mMessageBuffer,(void*)(&mMessageRx),sizeof(MessageType_t),portMAX_DELAY);
@@ -87,12 +99,12 @@ void TaskDisplay_PrintTimeString(void){
 
 void TaskDisplay_FormatAndPrintTime(StopTimeType_t time,char const * preString){
 
-	char buffer[16+1];
-	char displayBuffer[16+1];
+	char buffer[LCD_COLS+1];
+	char displayBuffer[LCD_COLS+1];
 	memset(displayBuffer,0,sizeof(displayBuffer));
 
 	int32_t preStringLen = strlen(preString);
-	int32_t timeLen = snprintf(buffer,16+1,"%d.%02ds",time.seconds,(time.milliseconds/10)%100);
+	int32_t timeLen = snprintf(buffer,LCD_COLS+1,"%d.%02ds",time.seconds,(time.milliseconds/10)%100);
 	timeLen = strlen(buffer);
 
 	if(preStringLen+timeLen > 11){
@@ -122,14 +134,12 @@ void TaskDisplay_SetBacklightVal(uint8_t enable){
 }
 
 static void Display_Init(void){
-	I2C1_Init();
-
+	I2C1_Init(); // i2c lcd display
 	mLcd.addr = LCD_ADDRESS;
 	mLcd.cols = LCD_COLS;
 	mLcd.rows = LCD_ROWS;
 	mLcd.charsize = LCD_CHAR_SIZE;
 
-	LCD_Init(&mLcd,I2CWriteSingleByte,vTaskDelay);
 }
 
 static void I2CWriteSingleByte(uint8_t addr, uint8_t data){

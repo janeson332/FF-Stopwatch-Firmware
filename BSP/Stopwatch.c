@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
   * @file    Stopwatch.h
-  * @author  Jahn Stefan
+  * @author  Jahn Stefan <stefan.jahn332@gmail.com>
   * @version V1.0
   * @date    10.08.2018
-  * @brief   Module to handle a stopwatch (stops time and so on..)
+  * @brief   Module for stopping time with internal timer (tim2)
   ******************************************************************************
   */
 
