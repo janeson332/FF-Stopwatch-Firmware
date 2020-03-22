@@ -120,7 +120,7 @@ FunctionalState RN52_Enabled(void){
 	return (GPIO_ReadInputDataBit(DIGITAL_SWITCH_PORT,DIGITAL_SWITCH_PIN)==Bit_SET?ENABLE:DISABLE);
 }
 
-RN52RetType_t RN52_DeviceConnected(void){
+RN52RetType_t RN52_SPPDeviceConnected(void){
 	uint32_t tick = GetTicks();
 
 	RN52RetType_t ret = Enter_CommandMode();
@@ -143,8 +143,8 @@ RN52RetType_t RN52_DeviceConnected(void){
 	DEBUG_LOG(mResponse);
 	if(IsResponseValid()){
 		uint8_t byte0 = CharacterHexToByte(mResponse[0],mResponse[1]);
-		if((byte0 & (RN52_QUERY_BYTE0_SPP | RN52_QUERY_BYTE0_A2DP))
-				 == (RN52_QUERY_BYTE0_SPP | RN52_QUERY_BYTE0_A2DP)){
+		if((byte0 & (RN52_QUERY_BYTE0_SPP))
+				 == (RN52_QUERY_BYTE0_SPP)){
 			return RN52_OK;
 		} else{
 			return RN52_NOK;
