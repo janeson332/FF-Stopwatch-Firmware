@@ -100,6 +100,7 @@ void UART1_Init(void){
     USART_Init(USART1, &uartInitStruct);
     USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
     USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
+    NVIC_SetPriority(USART1_IRQn,5);
     NVIC_EnableIRQ(USART1_IRQn);
 
     /* Enable USART */

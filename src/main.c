@@ -18,6 +18,7 @@
 #include "Tasks/TaskButton.h"
 #include "Tasks/TaskDisplay.h"
 #include "Tasks/StopwatchTask.h"
+#include "Tasks/BluetoothTask.h"
 
 #include "i2c1.h"
 #include "LCD_i2c.h"
@@ -44,6 +45,9 @@ StackType_t stackDisplayTask[TASK_DISPLAY_STACK_SIZE];
 
 StaticTask_t tcbStopwatchTask;
 StackType_t stackStopwatchTask[STOPWATCH_TASK_STACK_SIZE];
+
+StaticTask_t tcbBluetoothTask;
+StackType_t stackBluetoothTask[BLUETOOTH_TASK_STACK_SIZE];
 // simple test task
 
 //static void I2CWriteSingleByte(uint8_t addr, uint8_t data){
@@ -124,6 +128,7 @@ void myTestTask2(void * parameters){
 int main(void){
 	Debug_Init();
 	RN52_Init(xTaskGetTickCount);
+	RN52_PowerEnable(ENABLE);
 	DEBUG_LOG("Start Program");
 
 
@@ -135,6 +140,7 @@ int main(void){
 
 	xTaskCreateStatic(TaskButton,"ButtonTask",TASK_BUTTON_STACK_SIZE,0,tskIDLE_PRIORITY,stackButtonTask,&tcbButtonTask);
 
+	xTaskCreateStatic(BluetoothTask,"BluetoothTask",BLUETOOTH_TASK_STACK_SIZE,0,tskIDLE_PRIORITY,stackBluetoothTask,&tcbBluetoothTask);
 
 
 

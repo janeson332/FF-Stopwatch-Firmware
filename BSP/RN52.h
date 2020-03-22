@@ -31,7 +31,7 @@ void RN52_PowerEnable(FunctionalState state);
 
 FunctionalState RN52_Enabled(void);
 
-RN52RetType_t RN52_DeviceConnected(void);
+RN52RetType_t RN52_SPPDeviceConnected(void);
 
 
 #endif /* RN52_H_INCLUDED */

@@ -34,8 +34,6 @@ void TaskButton(void){
 
 		for(uint8_t i=0; i<BUTTONS_NUMBER_MAX;++i){
 			HandleTaskEvent((ButtonType_t)(i));
-
-
 		}
 
 		vTaskDelay(5);
@@ -65,20 +63,24 @@ static void HandleTaskEvent(ButtonType_t button){
 				xTaskNotify(mEventTaskHandle,STOPWATCH_TASK_NOTIFY_BUTTON_RESERVED,eSetBits);
 			} else if(button == buzzer1){
 				xTaskNotify(mEventTaskHandle,STOPWATCH_TASK_NOTIFY_BUZZER1_PRESSED,eSetBits);
+				DEBUG_LOG("Buzzer1 Pressed");
 			} else if(button == buzzer2){
 				xTaskNotify(mEventTaskHandle,STOPWATCH_TASK_NOTIFY_BUZZER2_PRESSED,eSetBits);
+				DEBUG_LOG("Buzzer2 Pressed");
 			}
 		}
 	}
 
 	// button release
-	else if (lastButtonTaskEventState[button]!=0 && val == 0){
+	else if ((lastButtonTaskEventState[button] != 0) && (val == 0)){
 		lastButtonTaskEventState[button] = 0;
 		if(mEventTaskHandle != 0){
 			if(button == buzzer1){
 				xTaskNotify(mEventTaskHandle,STOPWATCH_TASK_NOTIFY_BUZZER1_RELEASED,eSetBits);
+				DEBUG_LOG("Buzzer1 Released");
 			} else if(button == buzzer2){
 				xTaskNotify(mEventTaskHandle,STOPWATCH_TASK_NOTIFY_BUZZER2_RELEASED,eSetBits);
+				DEBUG_LOG("Buzzer2 Released");
 			}
 		}
 	}
